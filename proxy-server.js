@@ -54,22 +54,29 @@ function nmToDeg(nm) {
 
 // ── Fetch from OpenSky Network ───────────────────────────────────────────────
 async function fetchOpenSky(latMin, latMax, lonMin, lonMax) {
-  const base = "https://opensky-network.org/api/states/all";
-  const url  = `${base}?lamin=${latMin}&lomin=${lonMin}&lamax=${latMax}&lomax=${lonMax}`;
-
-  const headers = { "Content-Type": "application/json" };
-  if (process.env.OPENSKY_USER && process.env.OPENSKY_PASS) {
-    const creds = Buffer.from(
-      `${process.env.OPENSKY_USER}:${process.env.OPENSKY_PASS}`
-    ).toString("base64");
-    headers["Authorization"] = `Basic ${creds}`;
-  }
-
-  const res = await fetch(url, { headers, timeout: 10_000 });
-  if (!res.ok) throw new Error(`OpenSky returned ${res.status}`);
-
+  const url = `https://opendata.adsb.fi/api/v2/lat/${(latMin+latMax)/2}/lon/${(lonMin+lonMax)/2}/dist/250`;
+  
+  const res = await fetch(url, { timeout: 10_000 });
+  if (!res.ok) throw new Error(`ADSB returned ${res.status}`);
+  
   const json = await res.json();
-  return json.states || []; // array of state vectors
+  return (json.ac || []).map(a => [
+    a.hex,        // icao24
+    a.flight,     // callsign
+    a.r,          // origin
+    null,
+    null,
+    a.lon,        // longitude
+    a.lat,        // latitude
+    a.alt_baro,   // altitude
+    a.ground,     // on_ground
+    a.gs,         // speed
+    a.track,      // heading
+    a.baro_rate,  // vertical rate
+    null,
+    null,
+    a.squawk,
+  ]);
 }
 
 // ── Parse a state vector into a readable object ──────────────────────────────
