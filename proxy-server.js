@@ -12,7 +12,7 @@ app.get("/flights", async (req, res) => {
 
   try {
     const url = `https://opendata.adsb.fi/api/v2/lat/${lat}/lon/${lon}/dist/250`;
-    const response = await fetch(url);
+    const response = await fetch(url, { headers: { "Accept-Encoding": "identity" } });
     const json = await response.json();
     const aircraft = json.ac || [];
 
