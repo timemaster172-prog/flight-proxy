@@ -17,7 +17,6 @@ app.get("/flights", async (req, res) => {
     const aircraft = json.ac || [];
 
     const flights = aircraft
-      .filter(a => a.alt_baro && a.alt_baro !== "ground")
       .map(a => ({
         icao24:      a.hex       || "????",
         callsign:    (a.flight   || "UNKNOWN").trim(),
