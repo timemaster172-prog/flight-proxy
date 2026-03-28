@@ -33,8 +33,21 @@ app.get("/flights", async (req, res) => {
 
     const text = await fetchUrl(url);
     console.log("Length:", text.length);
-
-    const json = JSON.parse(text);
+    let json;
+try {
+  json = JSON.parse(text);
+} catch(e) {
+  // Find the last complete aircraft object
+  const lastComma = text.lastIndexOf('},{"hex"');
+  const fixed = text.substring(0, lastComma + 1) + ']}';
+  try {
+    json = JSON.parse('{"ac":[' + text.substring(text.indexOf('[') + 1, lastComma + 1) + ']}');
+    console.log("Fixed partial JSON, got", json.ac.length, "aircraft");
+  } catch(e2) {
+    console.log("Could not fix JSON:", e2.message);
+    json = { ac: [] };
+  }
+}
     const flights = (json.ac || []).map(a => ({
       icao24:    a.hex       || "????",
       callsign:  (a.flight   || "UNKNOWN").trim(),
