@@ -69,7 +69,7 @@ async function fetchOpenSky(latMin, latMax, lonMin, lonMax) {
     a.lon,        // longitude
     a.lat,        // latitude
     a.alt_baro,   // altitude
-    a.ground,     // on_ground
+    a.ground === "ground", // on_ground
     a.gs,         // speed
     a.track,      // heading
     a.baro_rate,  // vertical rate
