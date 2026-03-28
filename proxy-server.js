@@ -16,14 +16,22 @@ app.get("/flights", async (req, res) => {
 
     const response = await fetch(url, {
       headers: { "Accept-Encoding": "identity" },
-      size: 10 * 1024 * 1024,
+      size: 50 * 1024 * 1024,
     });
 
     const text = await response.text();
     console.log("Response length:", text.length);
     console.log("First 200 chars:", text.substring(0, 200));
+    let json;
+try {
+  json = JSON.parse(text);
+} catch(e) {
+  // Try to salvage partial JSON by extracting individual aircraft objects
+  const matches = text.match(/\{"hex":"[^}]+"[^}]*\}/g) || [];
+  json = { ac: matches.map(m => { try { return JSON.parse(m); } catch(e) { return null; } }).filter(Boolean) };
+  console.log("Salvaged", json.ac.length, "aircraft from partial response");
+}
 
-    const json = JSON.parse(text);
     const aircraft = json.ac || [];
     console.log("Aircraft count:", aircraft.length);
 
